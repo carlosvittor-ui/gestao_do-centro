@@ -7,7 +7,7 @@ import OrganizacaoGira from './components/OrganizacaoGira';
 import HistoricoView from './components/HistoricoView';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import { mockFilhos } from './data/mock';
+//import { mockFilhos } from './data/mock';
 import { Menu, X } from 'lucide-react';
  
 const App: React.FC = () => {
