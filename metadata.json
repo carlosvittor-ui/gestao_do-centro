@@ -1,0 +1,5 @@
+{
+  "name": "Gestão de Terreiro",
+  "description": "Um aplicativo para gerenciar o cadastro de membros, registrar presença diária e organizar as funções para as giras de um terreiro.",
+  "requestFramePermissions": []
+}
