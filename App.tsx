@@ -9,7 +9,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { mockFilhos } from './data/mock';
 import { Menu, X } from 'lucide-react';
-
+ 
 const App: React.FC = () => {
   const [filhos, setFilhos] = useState<Filho[]>([]);
   const [currentView, setCurrentView] = useState<View>(View.Presenca);
