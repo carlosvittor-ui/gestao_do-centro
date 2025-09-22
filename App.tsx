@@ -1,15 +1,24 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Tab, View } from './types';
-import type { Filho, Presenca, MediumCambonePairings, DepartamentoAssignments, FilhoFormData, GiraHistorico } from './types';
+import type { Filho, Presenca, MediumCambonePairings, DepartamentoAssignments, FilhoFormData, GiraHistorico, GiraExternaState } from './types';
 import Cadastro from './components/Cadastro';
 import PresencaView from './components/PresencaView';
 import OrganizacaoGira from './components/OrganizacaoGira';
 import HistoricoView from './components/HistoricoView';
+import GiraExternaView from './components/GiraExternaView';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-//import { mockFilhos } from './data/mock';
+import { mockFilhos } from './data/mock';
 import { Menu, X } from 'lucide-react';
- 
+
+const initialGiraExternaState: GiraExternaState = {
+    nome: '',
+    data: new Date().toISOString().split('T')[0],
+    participantes: {},
+    carros: {},
+};
+
 const App: React.FC = () => {
   const [filhos, setFilhos] = useState<Filho[]>([]);
   const [currentView, setCurrentView] = useState<View>(View.Presenca);
@@ -20,6 +29,8 @@ const App: React.FC = () => {
   const [departamentoAssignments, setDepartamentoAssignments] = useState<DepartamentoAssignments>({});
   
   const [historicoGiras, setHistoricoGiras] = useState<GiraHistorico[]>([]);
+  const [giraExternaState, setGiraExternaState] = useState<GiraExternaState>(initialGiraExternaState);
+  
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -95,6 +106,7 @@ const App: React.FC = () => {
   
     try {
       // Prepare organization snapshot
+      // FIX: Corrected typo from 'podeDarPссе' to 'podeDarPasse'.
       const mediumsPresentesNaGira = filhosPresentes.filter(f => f.podeDarPasse);
       const completePairings: MediumCambonePairings = {};
       mediumsPresentesNaGira.forEach(medium => {
@@ -205,6 +217,12 @@ const App: React.FC = () => {
         );
       case View.Historico:
         return <HistoricoView historico={historicoGiras} filhos={filhos} />;
+      case View.GiraExterna:
+        return <GiraExternaView 
+            filhosAtivos={filhosAtivos}
+            giraExternaState={giraExternaState}
+            setGiraExternaState={setGiraExternaState}
+        />;
       default:
         return null;
     }
@@ -213,6 +231,7 @@ const App: React.FC = () => {
   const tabs: Tab[] = [
       { id: View.Presenca, label: 'Controle de Presença' },
       { id: View.Organizacao, label: 'Organização da Gira' },
+      { id: View.GiraExterna, label: 'Gira Externa' },
       { id: View.Cadastro, label: 'Cadastro de Membros' },
       { id: View.Historico, label: 'Histórico de Giras' },
   ];

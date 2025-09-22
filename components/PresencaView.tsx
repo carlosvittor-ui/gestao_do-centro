@@ -73,34 +73,30 @@ const PresencaView: React.FC<PresencaViewProps> = ({
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-800">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nome</th>
-                  <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Presente</th>
-                </tr>
-              </thead>
-              <tbody className="bg-gray-800/50 divide-y divide-gray-700">
-                {filhosAtivos.map((filho) => (
-                  <tr key={filho.id} className="hover:bg-gray-700/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">{filho.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{filho.nome}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                      <label className="flex justify-center items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={!!presenca[filho.id]}
-                          onChange={() => handleTogglePresenca(filho.id)}
-                          className="h-6 w-6 rounded-md bg-gray-700 border-gray-600 text-indigo-500 focus:ring-indigo-600"
-                        />
-                      </label>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="divide-y divide-gray-700">
+            <div className="hidden sm:flex bg-gray-800 px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              <div className="w-1/6">ID</div>
+              <div className="w-4/6">Nome</div>
+              <div className="w-1/6 text-center">Presente</div>
+            </div>
+            <div className="bg-gray-800/50 max-h-[60vh] overflow-y-auto">
+              {filhosAtivos.map((filho) => (
+                <div key={filho.id} className="flex flex-col sm:flex-row items-center px-6 py-3 hover:bg-gray-700/50 transition-colors">
+                  <div className="w-full sm:w-1/6 text-sm font-medium text-gray-100 mb-2 sm:mb-0"><span className="sm:hidden font-bold">ID: </span>{filho.id}</div>
+                  <div className="w-full sm:w-4/6 text-sm text-gray-300 mb-2 sm:mb-0"><span className="sm:hidden font-bold">Nome: </span>{filho.nome}</div>
+                  <div className="w-full sm:w-1/6 flex justify-center">
+                    <label className="flex justify-center items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!presenca[filho.id]}
+                        onChange={() => handleTogglePresenca(filho.id)}
+                        className="h-6 w-6 rounded-md bg-gray-700 border-gray-600 text-indigo-500 focus:ring-indigo-600"
+                      />
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

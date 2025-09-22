@@ -70,6 +70,7 @@ export enum View {
   Presenca = 'presenca',
   Organizacao = 'organizacao',
   Historico = 'historico',
+  GiraExterna = 'gira_externa',
 }
 
 export interface Presenca {
@@ -102,4 +103,24 @@ export interface GiraHistorico {
   presentes: number[]; // Array of Filho IDs
   ausentes: number[]; // Array of Filho IDs
   organizacao: GiraOrganizacaoSnapshot;
+}
+
+export enum TransporteModo {
+  Motorista = 'motorista',
+  Carona = 'carona',
+  Independente = 'independente',
+}
+
+export interface GiraExternaState {
+  nome: string;
+  data: string;
+  participantes: {
+    [filhoId: number]: {
+      participando: boolean;
+      transporte: TransporteModo | null;
+    }
+  };
+  carros: {
+    [motoristaId: number]: (number | null)[];
+  };
 }

@@ -36,7 +36,11 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
 }) => {
 
     const mediumsPresentes = useMemo(() => {
-        return filhosPresentes.filter(f => f.podeDarPasse).sort((a,b) => a.nome.localeCompare(b.nome));
+        return filhosPresentes.filter(f => f.podeDarPasse).sort((a,b) => {
+            if (a.nome === 'Pai Marcos') return -1;
+            if (b.nome === 'Pai Marcos') return 1;
+            return a.nome.localeCompare(b.nome);
+        });
     }, [filhosPresentes]);
     
     const mediumIdsPresentes = useMemo(() => new Set(mediumsPresentes.map(m => m.id)), [mediumsPresentes]);
@@ -60,18 +64,26 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
         );
     }, [filhosPresentes, mediumIdsPresentes, apoioIds, pairedCambonoIds, fixedFunctionIdsToExclude]);
 
-    const handlePairingChange = (mediumId: number, cambonoId: string) => {
-        const newPairings = { ...mediumCambonePairings };
-        const id = cambonoId ? parseInt(cambonoId, 10) : null;
-
-        for (const key in newPairings) {
-            if (newPairings[key] === id) {
-                newPairings[key] = null;
-            }
-        }
+    const handlePairingChange = (mediumId: number, cambonoIdStr: string) => {
+        const cambonoId = cambonoIdStr ? parseInt(cambonoIdStr, 10) : null;
         
-        newPairings[mediumId] = id;
-        setMediumCambonePairings(newPairings);
+        setMediumCambonePairings(prevPairings => {
+            const newPairings = { ...prevPairings };
+            
+            // If a cambono was selected, ensure they are unassigned from any other medium.
+            if (cambonoId !== null) {
+                for (const mId in newPairings) {
+                    if (newPairings[mId] === cambonoId) {
+                        newPairings[mId] = null;
+                    }
+                }
+            }
+
+            // Assign the new cambono (or null) to the current medium
+            newPairings[mediumId] = cambonoId;
+            
+            return newPairings;
+        });
     };
 
     const handleDepartmentChange = (dept: 'recepcao' | 'cantina', filhoId: string) => {
@@ -123,36 +135,109 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
     const filterByFuncao = (funcoes: Funcao[]) => filhosEmFuncaoFixa.filter(f => funcoes.includes(f.funcao));
 
     const handleGenerateImage = () => {
-        const element = document.getElementById('gira-organization-layout');
-        if (!element || !window.html2canvas) {
-            alert('Não foi possível gerar a imagem. A biblioteca de captura pode não ter sido carregada.');
+        // Find original elements to clone
+        const mediumsCard = document.getElementById('card-mediums');
+        const correnteCard = document.getElementById('card-corrente');
+        const funcoesCard = document.getElementById('card-funcoes');
+
+        if (!mediumsCard || !correnteCard || !funcoesCard || !window.html2canvas) {
+            alert('Erro: Não foi possível encontrar os elementos necessários para gerar a imagem.');
             return;
         }
-    
-        const originalSelects: { select: HTMLSelectElement; replacement: HTMLElement }[] = [];
-    
-        // Replace selects with styled spans for printing
-        element.querySelectorAll('select').forEach(select => {
-            const selectedOption = select.options[select.selectedIndex];
-            const text = selectedOption && selectedOption.value ? selectedOption.text : 'Não selecionado';
-            
-            const replacement = document.createElement('span');
-            replacement.textContent = text;
-            // Mimic the select's appearance for consistency in the image
-            replacement.className = select.className.replace('focus:outline-none focus:ring-indigo-500 focus:border-indigo-500', '') + ' flex items-center';
-            replacement.style.height = `${select.offsetHeight}px`; // Match height
 
-            select.style.display = 'none';
-            select.parentElement?.insertBefore(replacement, select);
-            originalSelects.push({ select, replacement });
-        });
+        // Create an off-screen container for rendering the image
+        const container = document.createElement('div');
+        container.id = 'image-generator-container';
+        container.style.position = 'absolute';
+        container.style.left = '-9999px';
+        container.style.top = '-9999px';
+        container.style.width = '1200px';
+        container.style.padding = '1.5rem';
+        container.style.backgroundColor = '#111827';
+        container.style.fontFamily = "'Inter', sans-serif";
+        container.style.color = '#e5e7eb';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '1.5rem';
 
-        window.html2canvas(element, {
+        // Create a dynamic header FOR THE IMAGE ONLY
+        const imageHeader = document.createElement('div');
+        imageHeader.className = 'p-4 bg-gray-800/50 rounded-lg'; // Mimic Card style
+        imageHeader.innerHTML = `
+            <div>
+                <h2 class="text-xl font-semibold text-gray-100">Organização da Gira: <span class="text-indigo-400">${giraDoDia || 'Não definida'}</span></h2>
+                <p class="text-sm text-gray-400">${dataDeHoje} - ${filhosPresentes.length} presentes</p>
+            </div>
+        `;
+
+        const replaceSelectsInClone = (originalElement: HTMLElement, clone: HTMLElement) => {
+            const originalSelects = originalElement.querySelectorAll('select');
+            const clonedSelects = clone.querySelectorAll('select');
+
+            if (originalSelects.length !== clonedSelects.length) {
+                console.error("Mismatch between original and cloned select elements.");
+                return;
+            }
+
+            clonedSelects.forEach((clonedSelect, index) => {
+                const originalSelect = originalSelects[index];
+                const selectedOption = originalSelect.options[originalSelect.selectedIndex];
+                const text = selectedOption && selectedOption.value ? selectedOption.text : 'Não selecionado';
+                
+                // Use a DIV for better block-level styling and flexbox alignment
+                const replacement = document.createElement('div');
+                replacement.textContent = text;
+                
+                // Copy original classes for styling (padding, bg, etc.), remove focus rings, and add flex for alignment.
+                // This ensures the replacement visually matches the select element's box.
+                replacement.className = clonedSelect.className.replace('focus:outline-none focus:ring-indigo-500 focus:border-indigo-500', '') + ' flex items-center';
+
+                if (clonedSelect.parentElement) {
+                    clonedSelect.parentElement.replaceChild(replacement, clonedSelect);
+                }
+            });
+        };
+        
+        // Clone elements
+        const mediumsClone = mediumsCard.cloneNode(true) as HTMLElement;
+        const correnteClone = correnteCard.cloneNode(true) as HTMLElement;
+        const funcoesClone = funcoesCard.cloneNode(true) as HTMLElement;
+        
+        // Replace selects by reading from original elements
+        replaceSelectsInClone(mediumsCard, mediumsClone);
+        replaceSelectsInClone(correnteCard, correnteClone);
+        replaceSelectsInClone(funcoesCard, funcoesClone);
+        
+        // Create the layout structure
+        const topRow = document.createElement('div');
+        topRow.style.display = 'flex';
+        topRow.style.gap = '1.5rem';
+        topRow.style.alignItems = 'flex-start';
+
+        const leftCol = document.createElement('div');
+        leftCol.style.flex = '0 0 35%';
+        leftCol.appendChild(mediumsClone);
+
+        const rightCol = document.createElement('div');
+        rightCol.style.flex = '1';
+        rightCol.appendChild(correnteClone);
+
+        topRow.appendChild(leftCol);
+        topRow.appendChild(rightCol);
+
+        // Append everything to the main container
+        container.appendChild(imageHeader);
+        container.appendChild(topRow);
+        container.appendChild(funcoesClone);
+
+        document.body.appendChild(container);
+
+        window.html2canvas(container, {
             backgroundColor: '#111827',
             scale: 2,
         }).then((canvas: HTMLCanvasElement) => {
             const link = document.createElement('a');
-            const fileName = `organizacao_${giraDoDia.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'gira'}_${dataDeHoje}.png`;
+            const fileName = `organizacao_${giraDoDia.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'gira'}_${new Date().toISOString().split('T')[0]}.png`;
             link.download = fileName;
             link.href = canvas.toDataURL('image/png');
             link.click();
@@ -160,13 +245,9 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
             console.error("Erro ao gerar imagem:", err);
             alert("Ocorreu um erro ao gerar a imagem.");
         }).finally(() => {
-            // Restore original selects after canvas promise resolves/rejects
-            originalSelects.forEach(({ select, replacement }) => {
-                select.style.display = '';
-                if (replacement.parentElement) {
-                    replacement.parentElement.removeChild(replacement);
-                }
-            });
+            if (container.parentElement) {
+                document.body.removeChild(container);
+            }
         });
     };
 
@@ -213,7 +294,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
 
             <div className="flex flex-col lg:flex-row gap-6" id="gira-organization-layout">
                 <div className="lg:w-[35%] w-full flex flex-col gap-6">
-                    <Card className="flex-1">
+                    <Card className="flex-1" id="card-mediums">
                         <CardHeader>
                             <h3 className="text-lg font-medium text-gray-200">Médiuns e Cambonos</h3>
                         </CardHeader>
@@ -255,7 +336,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                 </div>
 
                 <div className="lg:w-[65%] w-full flex flex-col gap-6">
-                    <Card>
+                    <Card id="card-corrente">
                         <CardHeader>
                             <h3 className="text-lg font-medium text-gray-200">Membros da Corrente</h3>
                         </CardHeader>
@@ -274,7 +355,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card id="card-funcoes">
                         <CardHeader>
                             <h3 className="text-lg font-medium text-gray-200">Funções e Departamentos</h3>
                         </CardHeader>

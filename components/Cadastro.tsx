@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { Filho, FilhoFormData } from '../types';
 import { Situacao, Funcao, Departamento } from '../types';
 import { Card, CardHeader, CardContent } from './ui/Card';
-import { PlusCircle, Edit, Trash2, Upload, Download, Image as ImageIcon } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Download, Image as ImageIcon, Briefcase, Building2, Calendar, Star } from 'lucide-react';
 import FilhoFormModal from './FilhoFormModal';
 
 interface CadastroProps {
@@ -391,65 +391,61 @@ const Cadastro: React.FC<CadastroProps> = ({ filhos, onAdd, onAddMultiple, onUpd
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-700">
-                            <thead className="bg-gray-800">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nome</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Situação</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">1º Orixá</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">2º Orixá</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Função</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Departamento</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Data de Entrada</th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-gray-800/50 divide-y divide-gray-700">
-                                {filteredFilhos.length > 0 ? filteredFilhos.map((filho) => (
-                                    <tr key={filho.id} className="hover:bg-gray-700/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">{filho.id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{filho.nome}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                            <span className="flex items-center gap-2">
-                                                <span className={`h-2 w-2 rounded-full ${statusColorMap[filho.situacao]}`}></span>
-                                                {filho.situacao.charAt(0).toUpperCase() + filho.situacao.slice(1)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{filho.orixas.primeiro}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{filho.orixas.segundo}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{filho.funcao}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{filho.departamento}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(filho.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                            <div className="flex items-center justify-center gap-4">
-                                                <button onClick={() => handleGenerateEntidadesImage(filho)} className="text-sky-400 hover:text-sky-300" title="Gerar Imagem de Entidades">
-                                                    <ImageIcon size={18}/>
-                                                </button>
-                                                <button onClick={() => handleOpenModalForEdit(filho)} className="text-indigo-400 hover:text-indigo-300" title="Editar">
-                                                    <Edit size={18}/>
-                                                </button>
-                                                <button onClick={() => handleDelete(filho.id)} className="text-red-400 hover:text-red-300" title="Excluir">
-                                                    <Trash2 size={18}/>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={9} className="text-center py-8 text-gray-500">
-                                            Nenhum membro encontrado com os filtros selecionados.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredFilhos.length > 0 ? filteredFilhos.map((filho) => (
+                    <Card key={filho.id} className="flex flex-col">
+                        <CardHeader className="flex-grow">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h4 className="font-bold text-lg text-indigo-400">{filho.nome}</h4>
+                                    <p className="text-xs text-gray-400">ID: {filho.id}</p>
+                                </div>
+                                <span className="flex items-center gap-2 text-sm">
+                                    <span className={`h-2.5 w-2.5 rounded-full ${statusColorMap[filho.situacao]}`}></span>
+                                    {filho.situacao.charAt(0).toUpperCase() + filho.situacao.slice(1)}
+                                </span>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm flex-grow">
+                             <div className="flex items-center gap-2">
+                                <Star size={14} className="text-yellow-400" />
+                                <span>{filho.orixas.primeiro || 'N/A'} / {filho.orixas.segundo || 'N/A'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Briefcase size={14} className="text-cyan-400" />
+                                <span>{filho.funcao}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Building2 size={14} className="text-teal-400" />
+                                <span>{filho.departamento}</span>
+                            </div>
+                             <div className="flex items-center gap-2">
+                                <Calendar size={14} className="text-gray-400" />
+                                <span>Entrada: {new Date(filho.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</span>
+                            </div>
+                        </CardContent>
+                        <div className="p-4 border-t border-gray-700">
+                             <div className="flex items-center justify-center gap-4">
+                                <button onClick={() => handleGenerateEntidadesImage(filho)} className="text-sky-400 hover:text-sky-300" title="Gerar Imagem de Entidades">
+                                    <ImageIcon size={20}/>
+                                </button>
+                                <button onClick={() => handleOpenModalForEdit(filho)} className="text-indigo-400 hover:text-indigo-300" title="Editar">
+                                    <Edit size={20}/>
+                                </button>
+                                <button onClick={() => handleDelete(filho.id)} className="text-red-400 hover:text-red-300" title="Excluir">
+                                    <Trash2 size={20}/>
+                                </button>
+                            </div>
+                        </div>
+                    </Card>
+                )) : (
+                    <div className="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
+                        <p className="text-center py-12 text-gray-500">
+                            Nenhum membro encontrado com os filtros selecionados.
+                        </p>
                     </div>
-                </CardContent>
-            </Card>
+                )}
+            </div>
 
             {isModalOpen && (
                 <FilhoFormModal
