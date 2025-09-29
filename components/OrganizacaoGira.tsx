@@ -312,7 +312,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                                 <div>
                                     <h4 className="font-semibold text-indigo-400 mb-2">Funções Fixas</h4>
                                     <div className="text-sm space-y-2">
-                                         <p><strong>Pais/Mães Peq.:</strong> {filterByFuncao([Funcao.PaiDaCasa]).map(f => f.nome).join(', ') || 'N/A'}</p>
+                                         <p><strong>Pai Da Casa:</strong> {filterByFuncao([Funcao.PaiDaCasa]).map(f => f.nome).join(', ') || 'N/A'}</p>
                                         <p><strong>Pais/Mães Peq.:</strong> {filterByFuncao([Funcao.PaiMaePequena]).map(f => f.nome).join(', ') || 'N/A'}</p>
                                         <p><strong>Ogãns/Curimba:</strong> {filterByFuncao([Funcao.Oga, Funcao.Curimba]).map(f => f.nome).join(', ') || 'N/A'}</p>
                                         <p><strong>Cambono Chefe:</strong> {filterByFuncao([Funcao.CambonoChefe]).map(f => f.nome).join(', ') || 'N/A'}</p>
