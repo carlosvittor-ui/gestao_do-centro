@@ -7,6 +7,7 @@ import OrganizacaoGira from './components/OrganizacaoGira';
 import HistoricoView from './components/HistoricoView';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { Menu, X } from 'lucide-react';
 
 const App: React.FC = () => {
   const [filhos, setFilhos] = useState<Filho[]>([]);
@@ -30,6 +31,8 @@ const App: React.FC = () => {
 
   // State for Festa/Homenagem
   const [festas, setFestas] = useState<FestaHomenagemEvento[]>([]);
+  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 
   const dataDeHoje = new Date().toLocaleDateString('pt-BR');
@@ -285,19 +288,40 @@ const App: React.FC = () => {
       { id: View.Historico, label: 'Histórico de Giras' },
   ];
 
+  const handleNavClick = (view: View) => {
+    setCurrentView(view);
+    setIsMobileMenuOpen(false);
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col">
       <Header />
       <nav className="bg-gray-800/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-16">
-            <div className="flex items-center">
+          <div className="relative flex items-center justify-center h-16">
+            
+            {/* Mobile menu button*/}
+            <div className="absolute inset-y-0 right-0 flex items-center md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                type="button"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                aria-controls="mobile-menu"
+                aria-expanded="false"
+              >
+                <span className="sr-only">Open main menu</span>
+                {isMobileMenuOpen ? <X className="block h-6 w-6" /> : <Menu className="block h-6 w-6" />}
+              </button>
+            </div>
+
+            {/* Desktop Menu */}
+            <div className="flex-1 flex items-center justify-center">
               <div className="hidden md:block">
                 <div className="flex items-baseline space-x-4">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
-                      onClick={() => setCurrentView(tab.id)}
+                      onClick={() => handleNavClick(tab.id)}
                       className={`${
                         currentView === tab.id
                           ? 'bg-indigo-500 text-white'
@@ -310,8 +334,30 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
+
           </div>
         </div>
+
+        {/* Mobile menu, show/hide based on menu state. */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden" id="mobile-menu">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => handleNavClick(tab.id)}
+                  className={`${
+                    currentView === tab.id
+                      ? 'bg-indigo-500 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  } block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
       <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
         {renderView()}
