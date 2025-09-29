@@ -206,6 +206,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                 <CardHeader><h3 className="text-xl font-semibold flex items-center gap-2"><Anchor size={20}/> Funções e Departamentos</h3></CardHeader>
                 <CardContent className="grid grid-cols-2 gap-8 text-sm">
                     <div className="space-y-2">
+                        <p><strong>Pai da casa:</strong> {filterByFuncao([Funcao.PaiDaCasa]).map(f => f.nome).join(', ') || 'N/A'}</p>
                         <p><strong>Pais/Mães Peq.:</strong> {filterByFuncao([Funcao.PaiMaePequena]).map(f => f.nome).join(', ') || 'N/A'}</p>
                         <p><strong>Ogãns/Curimba:</strong> {filterByFuncao([Funcao.Oga, Funcao.Curimba]).map(f => f.nome).join(', ') || 'N/A'}</p>
                         <p><strong>Cambono Chefe:</strong> {filterByFuncao([Funcao.CambonoChefe]).map(f => f.nome).join(', ') || 'N/A'}</p>
@@ -311,6 +312,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                                 <div>
                                     <h4 className="font-semibold text-indigo-400 mb-2">Funções Fixas</h4>
                                     <div className="text-sm space-y-2">
+                                         <p><strong>Pais/Mães Peq.:</strong> {filterByFuncao([Funcao.PaiDaCasa]).map(f => f.nome).join(', ') || 'N/A'}</p>
                                         <p><strong>Pais/Mães Peq.:</strong> {filterByFuncao([Funcao.PaiMaePequena]).map(f => f.nome).join(', ') || 'N/A'}</p>
                                         <p><strong>Ogãns/Curimba:</strong> {filterByFuncao([Funcao.Oga, Funcao.Curimba]).map(f => f.nome).join(', ') || 'N/A'}</p>
                                         <p><strong>Cambono Chefe:</strong> {filterByFuncao([Funcao.CambonoChefe]).map(f => f.nome).join(', ') || 'N/A'}</p>
