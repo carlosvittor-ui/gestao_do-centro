@@ -5,6 +5,7 @@ export enum Situacao {
 }
 
 export enum Funcao {
+  PaiDaCasa = 'Pai de Santp"
   PaiMaePequena = 'Pai ou Mãe Pequena',
   Oga = 'Ogãns',
   Curimba = 'curimba',
