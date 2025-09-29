@@ -49,8 +49,8 @@ const HistoricoDetalhesModal: React.FC<HistoricoDetalhesModalProps> = ({ gira, f
     const filhosNaoAlocados = presentesFilhos.filter(f => !alocadosIds.has(f.id));
 
     return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-backdrop" onClick={onClose}>
-        <div className="w-full max-w-6xl modal-content" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="w-full max-w-6xl" onClick={e => e.stopPropagation()}>
             <Card className="max-h-[90vh] overflow-y-auto">
                 <CardHeader>
                     <div className="flex justify-between items-center">

@@ -1,14 +1,13 @@
 import React from 'react';
 
-// Extend the props to include all standard div attributes like 'id'
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
+export const Card: React.FC<CardProps> = ({ children, className = '' }) => {
   return (
-    <div {...props} className={`bg-gray-800/50 border border-gray-700 rounded-lg shadow-md ${className}`}>
+    <div className={`bg-gray-800/50 border border-gray-700 rounded-lg shadow-md ${className}`}>
       {children}
     </div>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
-import type { Filho, Presenca } from '../types';
+import type { Filho, Presenca, PresencaStatus } from '../types';
 import { Card, CardHeader, CardContent } from './ui/Card';
+import { Check, X } from 'lucide-react';
 
 interface PresencaViewProps {
   filhosAtivos: Filho[];
@@ -19,23 +20,30 @@ const PresencaView: React.FC<PresencaViewProps> = ({
   setGiraDoDia,
   dataDeHoje,
 }) => {
+  const sortedFilhos = [...filhosAtivos].sort((a, b) => a.nome.localeCompare(b.nome));
 
-  const handleTogglePresenca = (filhoId: number) => {
-    setPresenca({
-      ...presenca,
-      [filhoId]: !presenca[filhoId],
-    });
+  const handleSetPresencaStatus = (filhoId: number, status: PresencaStatus) => {
+    const currentStatus = presenca[filhoId];
+    const newStatus = currentStatus === status ? undefined : status;
+    
+    const newPresenca = { ...presenca };
+    if (newStatus) {
+      newPresenca[filhoId] = newStatus;
+    } else {
+      delete newPresenca[filhoId];
+    }
+    setPresenca(newPresenca);
   };
 
-  const marcarTodos = () => {
+  const marcarTodosPresentes = () => {
     const novaPresenca: Presenca = {};
     filhosAtivos.forEach(filho => {
-        novaPresenca[filho.id] = true;
+        novaPresenca[filho.id] = 'presente';
     });
     setPresenca(novaPresenca);
   };
 
-  const desmarcarTodos = () => {
+  const limparSelecao = () => {
       setPresenca({});
   };
 
@@ -67,37 +75,35 @@ const PresencaView: React.FC<PresencaViewProps> = ({
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium text-gray-200">Lista de Ativos</h3>
             <div className="space-x-2">
-                <button onClick={marcarTodos} className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md text-xs transition-colors">Marcar Todos</button>
-                <button onClick={desmarcarTodos} className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-xs transition-colors">Desmarcar Todos</button>
+                <button onClick={marcarTodosPresentes} className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md text-xs transition-colors">Marcar Todos Presentes</button>
+                <button onClick={limparSelecao} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded-md text-xs transition-colors">Limpar Seleção</button>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y divide-gray-700">
-            <div className="hidden sm:flex bg-gray-800 px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-              <div className="w-1/6">ID</div>
-              <div className="w-4/6">Nome</div>
-              <div className="w-1/6 text-center">Presente</div>
-            </div>
-            <div className="bg-gray-800/50 max-h-[60vh] overflow-y-auto">
-              {filhosAtivos.map((filho) => (
-                <div key={filho.id} className="flex flex-col sm:flex-row items-center px-6 py-3 hover:bg-gray-700/50 transition-colors">
-                  <div className="w-full sm:w-1/6 text-sm font-medium text-gray-100 mb-2 sm:mb-0"><span className="sm:hidden font-bold">ID: </span>{filho.id}</div>
-                  <div className="w-full sm:w-4/6 text-sm text-gray-300 mb-2 sm:mb-0"><span className="sm:hidden font-bold">Nome: </span>{filho.nome}</div>
-                  <div className="w-full sm:w-1/6 flex justify-center">
-                    <label className="flex justify-center items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={!!presenca[filho.id]}
-                        onChange={() => handleTogglePresenca(filho.id)}
-                        className="h-6 w-6 rounded-md bg-gray-700 border-gray-600 text-indigo-500 focus:ring-indigo-600"
-                      />
-                    </label>
-                  </div>
+          <ul className="divide-y divide-gray-700">
+            {sortedFilhos.map((filho) => (
+              <li key={filho.id} className="flex items-center justify-between p-4 hover:bg-gray-700/50 transition-colors">
+                <span className="text-sm font-medium text-gray-200">{filho.nome}</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleSetPresencaStatus(filho.id, 'presente')}
+                    className={`p-2 rounded-full transition-colors ${presenca[filho.id] === 'presente' ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-green-700'}`}
+                    aria-label={`Marcar ${filho.nome} como presente`}
+                  >
+                    <Check size={20} />
+                  </button>
+                  <button
+                    onClick={() => handleSetPresencaStatus(filho.id, 'ausente')}
+                    className={`p-2 rounded-full transition-colors ${presenca[filho.id] === 'ausente' ? 'bg-red-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-red-700'}`}
+                    aria-label={`Marcar ${filho.nome} como ausente`}
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
+              </li>
+            ))}
+          </ul>
         </CardContent>
       </Card>
     </div>

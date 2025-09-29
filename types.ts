@@ -22,6 +22,18 @@ export enum Departamento {
   Nenhum = 'Nenhum'
 }
 
+export interface PadrinhoSelection {
+  filhoId: number;
+  entidadeKey: string;
+}
+
+export interface JuremaInfo {
+  e: boolean;
+  data?: string;
+  barcoId?: number;
+}
+
+
 export interface Filho {
   id: number;
   nome: string;
@@ -46,10 +58,7 @@ export interface Filho {
     exuMirim: string;
   };
   pontoRiscadoUrl?: string;
-  juremado: {
-    e: boolean;
-    data?: string;
-  };
+  juremado: JuremaInfo;
   ordemSuporte: {
     tem: boolean;
     data?: string;
@@ -60,6 +69,7 @@ export interface Filho {
   };
   podeDarPasse: boolean;
   funcao: Funcao;
+  entidadesPadrinhos?: string[]; // array of keys from `entidades`
 }
 
 export type FilhoFormData = Omit<Filho, 'id'>;
@@ -70,11 +80,12 @@ export enum View {
   Presenca = 'presenca',
   Organizacao = 'organizacao',
   Historico = 'historico',
-  GiraExterna = 'gira_externa',
 }
 
+export type PresencaStatus = 'presente' | 'ausente';
+
 export interface Presenca {
-  [filhoId: number]: boolean;
+  [filhoId: number]: PresencaStatus;
 }
 
 export interface MediumCambonePairings {
@@ -97,30 +108,56 @@ export interface GiraOrganizacaoSnapshot {
 }
 
 export interface GiraHistorico {
-  id: string; // Unique ID, e.g., an ISO string from new Date()
+  id: number;
+  gira_id: number;
   data: string;
   giraDoDia: string;
-  presentes: number[]; // Array of Filho IDs
-  ausentes: number[]; // Array of Filho IDs
+  presentes: number[];
+  ausentes: number[];
   organizacao: GiraOrganizacaoSnapshot;
 }
 
-export enum TransporteModo {
-  Motorista = 'motorista',
-  Carona = 'carona',
-  Independente = 'independente',
+export interface Barco {
+  id: number;
+  nome: string;
+  padrinhos?: PadrinhoSelection[];
 }
 
-export interface GiraExternaState {
-  nome: string;
-  data: string;
-  participantes: {
-    [filhoId: number]: {
-      participando: boolean;
-      transporte: TransporteModo | null;
-    }
-  };
-  carros: {
-    [motoristaId: number]: (number | null)[];
-  };
+// Tipos para Gira Externa
+export type GiraExternaTransporte = 'motorista' | 'carona' | 'independente';
+
+export interface GiraExternaParticipante {
+    participa: boolean;
+    transporte?: GiraExternaTransporte;
+}
+
+export interface GiraExternaParticipacao {
+    [filhoId: number]: GiraExternaParticipante;
+}
+
+export interface GiraExternaCarros {
+    [motoristaId: number]: (number | null)[]; // Array of 4 passenger IDs
+}
+
+export interface GiraExternaSalva {
+    id: number;
+    nome: string;
+    data: string;
+    participacao: GiraExternaParticipacao;
+    carros: GiraExternaCarros;
+}
+
+// Tipos para Festa/Homenagem
+export interface FestaPagamento {
+    pago: boolean;
+    valor?: number;
+}
+
+export interface FestaHomenagemEvento {
+    id: number;
+    nome: string;
+    data: string;
+    pagamentos: {
+        [filhoId: number]: FestaPagamento;
+    };
 }

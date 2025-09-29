@@ -2,9 +2,8 @@ import React, { useMemo } from 'react';
 import type { Filho, MediumCambonePairings, DepartamentoAssignments } from '../types';
 import { Funcao, Departamento } from '../types';
 import { Card, CardHeader, CardContent } from './ui/Card';
-import { Save, Image as ImageIcon } from 'lucide-react';
+import { Save, Image as ImageIcon, Users, Hand, Building, Anchor } from 'lucide-react';
 
-// Define html2canvas no escopo global para o TypeScript
 declare global {
     interface Window {
         html2canvas: any;
@@ -36,11 +35,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
 }) => {
 
     const mediumsPresentes = useMemo(() => {
-        return filhosPresentes.filter(f => f.podeDarPasse).sort((a,b) => {
-            if (a.nome === 'Pai Marcos') return -1;
-            if (b.nome === 'Pai Marcos') return 1;
-            return a.nome.localeCompare(b.nome);
-        });
+        return filhosPresentes.filter(f => f.podeDarPasse).sort((a,b) => a.nome.localeCompare(b.nome));
     }, [filhosPresentes]);
     
     const mediumIdsPresentes = useMemo(() => new Set(mediumsPresentes.map(m => m.id)), [mediumsPresentes]);
@@ -64,26 +59,18 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
         );
     }, [filhosPresentes, mediumIdsPresentes, apoioIds, pairedCambonoIds, fixedFunctionIdsToExclude]);
 
-    const handlePairingChange = (mediumId: number, cambonoIdStr: string) => {
-        const cambonoId = cambonoIdStr ? parseInt(cambonoIdStr, 10) : null;
-        
-        setMediumCambonePairings(prevPairings => {
-            const newPairings = { ...prevPairings };
-            
-            // If a cambono was selected, ensure they are unassigned from any other medium.
-            if (cambonoId !== null) {
-                for (const mId in newPairings) {
-                    if (newPairings[mId] === cambonoId) {
-                        newPairings[mId] = null;
-                    }
-                }
-            }
+    const handlePairingChange = (mediumId: number, cambonoId: string) => {
+        const newPairings = { ...mediumCambonePairings };
+        const id = cambonoId ? parseInt(cambonoId, 10) : null;
 
-            // Assign the new cambono (or null) to the current medium
-            newPairings[mediumId] = cambonoId;
-            
-            return newPairings;
-        });
+        for (const key in newPairings) {
+            if (newPairings[key] === id) {
+                newPairings[key] = null;
+            }
+        }
+        
+        newPairings[mediumId] = id;
+        setMediumCambonePairings(newPairings);
     };
 
     const handleDepartmentChange = (dept: 'recepcao' | 'cantina', filhoId: string) => {
@@ -133,122 +120,28 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
     }, [filhosPresentes, mediumIdsPresentes, pairedCambonoIds, apoioIds, fixedFunctionIdsToExclude]);
     
     const filterByFuncao = (funcoes: Funcao[]) => filhosEmFuncaoFixa.filter(f => funcoes.includes(f.funcao));
+    
+    const findNameById = (id: number | null) => {
+        if (id === null) return 'N/A';
+        return filhos.find(f => f.id === id)?.nome || 'N/A';
+    }
 
     const handleGenerateImage = () => {
-        // Find original elements to clone
-        const mediumsCard = document.getElementById('card-mediums');
-        const correnteCard = document.getElementById('card-corrente');
-        const funcoesCard = document.getElementById('card-funcoes');
-
-        if (!mediumsCard || !correnteCard || !funcoesCard || !window.html2canvas) {
-            alert('Erro: Não foi possível encontrar os elementos necessários para gerar a imagem.');
-            return;
-        }
-
-        // Create an off-screen container for rendering the image
-        const container = document.createElement('div');
-        container.id = 'image-generator-container';
-        container.style.position = 'absolute';
-        container.style.left = '-9999px';
-        container.style.top = '-9999px';
-        container.style.width = '1200px';
-        container.style.padding = '1.5rem';
-        container.style.backgroundColor = '#111827';
-        container.style.fontFamily = "'Inter', sans-serif";
-        container.style.color = '#e5e7eb';
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.gap = '1.5rem';
-
-        // Create a dynamic header FOR THE IMAGE ONLY
-        const imageHeader = document.createElement('div');
-        imageHeader.className = 'p-4 bg-gray-800/50 rounded-lg'; // Mimic Card style
-        imageHeader.innerHTML = `
-            <div>
-                <h2 class="text-xl font-semibold text-gray-100">Organização da Gira: <span class="text-indigo-400">${giraDoDia || 'Não definida'}</span></h2>
-                <p class="text-sm text-gray-400">${dataDeHoje} - ${filhosPresentes.length} presentes</p>
-            </div>
-        `;
-
-        const replaceSelectsInClone = (originalElement: HTMLElement, clone: HTMLElement) => {
-            const originalSelects = originalElement.querySelectorAll('select');
-            const clonedSelects = clone.querySelectorAll('select');
-
-            if (originalSelects.length !== clonedSelects.length) {
-                console.error("Mismatch between original and cloned select elements.");
-                return;
-            }
-
-            clonedSelects.forEach((clonedSelect, index) => {
-                const originalSelect = originalSelects[index];
-                const selectedOption = originalSelect.options[originalSelect.selectedIndex];
-                const text = selectedOption && selectedOption.value ? selectedOption.text : 'Não selecionado';
-                
-                // Use a DIV for better block-level styling and flexbox alignment
-                const replacement = document.createElement('div');
-                replacement.textContent = text;
-                
-                // Copy original classes for styling (padding, bg, etc.), remove focus rings, and add flex for alignment.
-                // This ensures the replacement visually matches the select element's box.
-                replacement.className = clonedSelect.className.replace('focus:outline-none focus:ring-indigo-500 focus:border-indigo-500', '') + ' flex items-center';
-
-                if (clonedSelect.parentElement) {
-                    clonedSelect.parentElement.replaceChild(replacement, clonedSelect);
-                }
+        const element = document.getElementById('gira-organization-layout-image');
+        if (element && window.html2canvas) {
+            window.html2canvas(element, {
+                backgroundColor: '#111827',
+                scale: 2,
+            }).then((canvas: HTMLCanvasElement) => {
+                const link = document.createElement('a');
+                const fileName = `organizacao_${giraDoDia.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'gira'}_${dataDeHoje.replace(/\//g,'-')}.png`;
+                link.download = fileName;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
             });
-        };
-        
-        // Clone elements
-        const mediumsClone = mediumsCard.cloneNode(true) as HTMLElement;
-        const correnteClone = correnteCard.cloneNode(true) as HTMLElement;
-        const funcoesClone = funcoesCard.cloneNode(true) as HTMLElement;
-        
-        // Replace selects by reading from original elements
-        replaceSelectsInClone(mediumsCard, mediumsClone);
-        replaceSelectsInClone(correnteCard, correnteClone);
-        replaceSelectsInClone(funcoesCard, funcoesClone);
-        
-        // Create the layout structure
-        const topRow = document.createElement('div');
-        topRow.style.display = 'flex';
-        topRow.style.gap = '1.5rem';
-        topRow.style.alignItems = 'flex-start';
-
-        const leftCol = document.createElement('div');
-        leftCol.style.flex = '0 0 35%';
-        leftCol.appendChild(mediumsClone);
-
-        const rightCol = document.createElement('div');
-        rightCol.style.flex = '1';
-        rightCol.appendChild(correnteClone);
-
-        topRow.appendChild(leftCol);
-        topRow.appendChild(rightCol);
-
-        // Append everything to the main container
-        container.appendChild(imageHeader);
-        container.appendChild(topRow);
-        container.appendChild(funcoesClone);
-
-        document.body.appendChild(container);
-
-        window.html2canvas(container, {
-            backgroundColor: '#111827',
-            scale: 2,
-        }).then((canvas: HTMLCanvasElement) => {
-            const link = document.createElement('a');
-            const fileName = `organizacao_${giraDoDia.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'gira'}_${new Date().toISOString().split('T')[0]}.png`;
-            link.download = fileName;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }).catch((err: any) => {
-            console.error("Erro ao gerar imagem:", err);
-            alert("Ocorreu um erro ao gerar a imagem.");
-        }).finally(() => {
-            if (container.parentElement) {
-                document.body.removeChild(container);
-            }
-        });
+        } else {
+            alert('Não foi possível gerar a imagem. A biblioteca de captura pode não ter sido carregada.');
+        }
     };
 
     if (filhosPresentes.length === 0) {
@@ -262,8 +155,81 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
         );
     }
     
+    const ImageLayout = () => (
+        <div id="gira-organization-layout-image" className="p-8 bg-gray-900 text-gray-200 space-y-6" style={{ width: '800px'}}>
+             <div className="text-center border-b-2 border-indigo-500 pb-4 mb-6">
+                <h1 className="text-3xl font-bold text-indigo-400">{giraDoDia || 'Gira sem nome'}</h1>
+                <p className="text-lg text-gray-400">{dataDeHoje}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+                <div> {/* Left Column */}
+                     {mediumsPresentes.length > 0 && (
+                        <Card className="h-full border-2 border-indigo-500/70 shadow-lg shadow-indigo-500/20">
+                            <CardHeader><h3 className="text-xl font-semibold flex items-center gap-2"><Hand size={20}/> Médiuns e Cambonos</h3></CardHeader>
+                            <CardContent className="p-0">
+                                 <table className="w-full text-left">
+                                    <thead className="bg-gray-800/50">
+                                        <tr className="border-b border-gray-600">
+                                            <th className="p-3 text-sm font-semibold uppercase text-gray-400 tracking-wider">Médium</th>
+                                            <th className="p-3 text-sm font-semibold uppercase text-gray-400 tracking-wider">Cambono</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {mediumsPresentes.map(medium => (
+                                            <tr key={medium.id} className="border-b border-gray-700/50 last:border-b-0">
+                                                <td className="p-3 font-medium text-gray-100">{medium.nome}</td>
+                                                <td className="p-3 text-gray-300">{findNameById(mediumCambonePairings[medium.id] || null)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+                <div> {/* Right Column */}
+                     {filhosNaoAlocados.length > 0 && (
+                        <Card className="h-full">
+                            <CardHeader><h3 className="text-xl font-semibold flex items-center gap-2"><Users size={20}/> Médiuns da Corrente</h3></CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                                    {filhosNaoAlocados.map(f => <p key={f.id} className="text-gray-300 border-b border-gray-700/50 pb-1">{f.nome}</p>)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            </div>
+
+            <Card>
+                <CardHeader><h3 className="text-xl font-semibold flex items-center gap-2"><Anchor size={20}/> Funções e Departamentos</h3></CardHeader>
+                <CardContent className="grid grid-cols-2 gap-8 text-sm">
+                    <div className="space-y-2">
+                        <p><strong>Pais/Mães Peq.:</strong> {filterByFuncao([Funcao.PaiMaePequena]).map(f => f.nome).join(', ') || 'N/A'}</p>
+                        <p><strong>Ogãns/Curimba:</strong> {filterByFuncao([Funcao.Oga, Funcao.Curimba]).map(f => f.nome).join(', ') || 'N/A'}</p>
+                        <p><strong>Cambono Chefe:</strong> {filterByFuncao([Funcao.CambonoChefe]).map(f => f.nome).join(', ') || 'N/A'}</p>
+                        <p><strong>Ekedis:</strong> {filterByFuncao([Funcao.Ekedi]).map(f => f.nome).join(', ') || 'N/A'}</p>
+                         <p><strong>Filhas do Axé:</strong> {filterByFuncao([Funcao.FilhaAxe]).map(f => f.nome).join(', ') || 'N/A'}</p>
+                    </div>
+                     <div className="space-y-2">
+                        <p><strong>Recepção:</strong> {findNameById(departamentoAssignments.recepcao || null)}</p>
+                        <p><strong>Cantina:</strong> {findNameById(departamentoAssignments.cantina || null)}</p>
+                        <p><strong>Limpeza:</strong> <span className="text-gray-400">Escala no grupo</span></p>
+                        <p><strong>Cozinha:</strong> <span className="text-gray-400">Escala no grupo</span></p>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+
     return (
         <div className="space-y-6">
+             {/* Componente para a imagem, fica escondido */}
+            <div className="absolute -left-[9999px] top-0">
+                <ImageLayout />
+            </div>
+
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-center flex-wrap gap-4">
@@ -292,9 +258,9 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                 </CardHeader>
             </Card>
 
-            <div className="flex flex-col lg:flex-row gap-6" id="gira-organization-layout">
+            <div className="flex flex-col lg:flex-row gap-6">
                 <div className="lg:w-[35%] w-full flex flex-col gap-6">
-                    <Card className="flex-1" id="card-mediums">
+                    <Card className="flex-1">
                         <CardHeader>
                             <h3 className="text-lg font-medium text-gray-200">Médiuns e Cambonos</h3>
                         </CardHeader>
@@ -336,33 +302,14 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                 </div>
 
                 <div className="lg:w-[65%] w-full flex flex-col gap-6">
-                    <Card id="card-corrente">
-                        <CardHeader>
-                            <h3 className="text-lg font-medium text-gray-200">Membros da Corrente</h3>
-                        </CardHeader>
-                        <CardContent>
-                            {filhosNaoAlocados.length > 0 ? (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                    {filhosNaoAlocados.map(filho => (
-                                        <div key={filho.id} className="bg-gray-700/50 p-3 rounded-md text-center text-sm">
-                                            {filho.nome}
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-gray-500 text-center py-8">Todos os membros presentes foram alocados.</p>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card id="card-funcoes">
+                    <Card>
                         <CardHeader>
                             <h3 className="text-lg font-medium text-gray-200">Funções e Departamentos</h3>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <h4 className="font-semibold text-indigo-400 mb-2">Funções</h4>
+                                    <h4 className="font-semibold text-indigo-400 mb-2">Funções Fixas</h4>
                                     <div className="text-sm space-y-2">
                                         <p><strong>Pais/Mães Peq.:</strong> {filterByFuncao([Funcao.PaiMaePequena]).map(f => f.nome).join(', ') || 'N/A'}</p>
                                         <p><strong>Ogãns/Curimba:</strong> {filterByFuncao([Funcao.Oga, Funcao.Curimba]).map(f => f.nome).join(', ') || 'N/A'}</p>
@@ -401,6 +348,20 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                                     </div>
                                 </div>
                             </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <h3 className="text-lg font-medium text-gray-200">Médiuns da Corrente</h3>
+                        </CardHeader>
+                        <CardContent>
+                            {filhosNaoAlocados.length > 0 ? (
+                                <p className="text-gray-400 leading-relaxed">
+                                    {filhosNaoAlocados.map(filho => filho.nome).join(', ')}
+                                </p>
+                            ) : (
+                                <p className="text-gray-500 text-center py-4">Todos os membros presentes foram alocados em alguma função.</p>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
