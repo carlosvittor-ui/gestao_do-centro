@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { mockFilhos, mockHistorico, mockBarcos, mockGirasExternasSalvas, mockFestas } from './data/mock';
 import { Tab, View } from './types';
 import type { Filho, Presenca, MediumCambonePairings, DepartamentoAssignments, FilhoFormData, GiraHistorico, Barco, GiraExternaParticipacao, GiraExternaCarros, GiraExternaSalva, FestaHomenagemEvento } from './types';
 import OrganizacaoTendaView from './components/OrganizacaoTendaView';
@@ -10,8 +9,8 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 
 const App: React.FC = () => {
-  const [filhos, setFilhos] = useState<Filho[]>(mockFilhos);
-  const [barcos, setBarcos] = useState<Barco[]>(mockBarcos);
+  const [filhos, setFilhos] = useState<Filho[]>([]);
+  const [barcos, setBarcos] = useState<Barco[]>([]);
   const [currentView, setCurrentView] = useState<View>(View.Presenca);
   const [giraDoDia, setGiraDoDia] = useState<string>('');
   const [presenca, setPresenca] = useState<Presenca>({});
@@ -19,18 +18,18 @@ const App: React.FC = () => {
   const [mediumCambonePairings, setMediumCambonePairings] = useState<MediumCambonePairings>({});
   const [departamentoAssignments, setDepartamentoAssignments] = useState<DepartamentoAssignments>({});
   
-  const [historicoGiras, setHistoricoGiras] = useState<GiraHistorico[]>(mockHistorico);
+  const [historicoGiras, setHistoricoGiras] = useState<GiraHistorico[]>([]);
 
   // State for Gira Externa
   const [giraExternaNome, setGiraExternaNome] = useState<string>('');
   const [giraExternaData, setGiraExternaData] = useState<string>(new Date().toISOString().split('T')[0]);
   const [participacaoGiraExterna, setParticipacaoGiraExterna] = useState<GiraExternaParticipacao>({});
   const [carrosGiraExterna, setCarrosGiraExterna] = useState<GiraExternaCarros>({});
-  const [girasExternasSalvas, setGirasExternasSalvas] = useState<GiraExternaSalva[]>(mockGirasExternasSalvas);
+  const [girasExternasSalvas, setGirasExternasSalvas] = useState<GiraExternaSalva[]>([]);
   const [editingGiraExternaId, setEditingGiraExternaId] = useState<number | null>(null);
 
   // State for Festa/Homenagem
-  const [festas, setFestas] = useState<FestaHomenagemEvento[]>(mockFestas);
+  const [festas, setFestas] = useState<FestaHomenagemEvento[]>([]);
 
 
   const dataDeHoje = new Date().toLocaleDateString('pt-BR');
@@ -133,9 +132,6 @@ const App: React.FC = () => {
       setFilhos(prev => 
         prev.map(f => {
           if (f.juremado?.barcoId === id) {
-            // FIX: The error "Property 'barcoId' does not exist on type..." was caused by an incorrect attempt to delete `barcoId`.
-            // The object spread `...restJuremado` already creates a new object without `barcoId`, so the subsequent `delete` operation
-            // was both redundant and incorrect, as it operated on an object type where `barcoId` was already absent.
             const { barcoId, ...restJuremado } = f.juremado;
             return { ...f, juremado: restJuremado };
           }
