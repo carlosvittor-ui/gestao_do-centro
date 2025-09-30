@@ -326,7 +326,7 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                                         <div className="flex items-center gap-2">
                                             <strong className="w-20">Recepção:</strong>
                                             <select 
-                                                value={departamentoAssignments.recepcao || ''}
+                                                value={departamentoAssignments.recepcao }
                                                 onChange={e => handleDepartmentChange('recepcao', e.target.value)}
                                                 className="block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-1 px-2 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs"
                                             >
