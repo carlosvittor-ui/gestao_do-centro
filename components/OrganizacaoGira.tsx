@@ -214,8 +214,8 @@ const OrganizacaoGira: React.FC<OrganizacaoGiraProps> = ({
                          <p><strong>Filhas do Axé:</strong> {filterByFuncao([Funcao.FilhaAxe]).map(f => f.nome).join(', ') || 'N/A'}</p>
                     </div>
                      <div className="space-y-2">
-                        <p><strong>Recepção:</strong> {findNameById(departamentoAssignments.recepcao || null)}</p>
-                        <p><strong>Cantina:</strong> {findNameById(departamentoAssignments.cantina || null)}</p>
+                        <p><strong>Recepção:</strong> {findNameById(departamentoAssignments.recepcao )}</p>
+                        <p><strong>Cantina:</strong> {findNameById(departamentoAssignments.cantina )}</p>
                         <p><strong>Limpeza:</strong> <span className="text-gray-400">Escala no grupo</span></p>
                         <p><strong>Cozinha:</strong> <span className="text-gray-400">Escala no grupo</span></p>
                     </div>
