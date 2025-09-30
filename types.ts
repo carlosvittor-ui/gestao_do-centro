@@ -20,6 +20,7 @@ export enum Departamento {
   Cantina = 'Cantina',
   Cozinha = 'Cozinha',
   Limpeza = 'limpeza',
+  dept = 'Sem_dep',
   Nenhum = 'Nenhum'
 }
 
